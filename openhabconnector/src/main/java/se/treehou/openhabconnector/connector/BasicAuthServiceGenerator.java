@@ -1,13 +1,9 @@
-package treehou.se.habit.connector;
+package se.treehou.openhabconnector.connector;
 
 import android.text.TextUtils;
-import android.util.Base64;
 import android.util.Log;
 
-import com.squareup.okhttp.Interceptor;
 import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
 
 import org.apache.commons.io.IOUtils;
 
@@ -18,17 +14,18 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 
-import javax.net.ssl.SSLSocketFactory;
-
 import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
-import retrofit.Retrofit;
 import retrofit.client.OkClient;
 import retrofit.converter.ConversionException;
 import retrofit.converter.Converter;
 import retrofit.converter.GsonConverter;
 import retrofit.mime.TypedInput;
 import retrofit.mime.TypedOutput;
+import se.treehou.openhabconnector.connector.ConnectorUtil;
+import se.treehou.openhabconnector.connector.Constants;
+import se.treehou.openhabconnector.connector.GsonHelper;
+import se.treehou.openhabconnector.connector.TrustModifier;
 
 public class BasicAuthServiceGenerator {
 
@@ -45,24 +42,24 @@ public class BasicAuthServiceGenerator {
             e.printStackTrace();
         }
 
+        // set endpoint url and use OkHTTP as HTTP client
+        retrofit.RestAdapter.Builder builder = new RestAdapter.Builder()
+                .setEndpoint(baseUrl)
+                .setClient(new OkClient(client));
+
         if (!TextUtils.isEmpty(username) && !TextUtils.isEmpty(password)) {
             // concatenate username and password with colon for authentication
 
-            client.networkInterceptors().add(new Interceptor() {
+            builder.setRequestInterceptor(new RequestInterceptor() {
                 @Override
-                public Response intercept(Chain chain) throws IOException {
+                public void intercept(RequestFacade request) {
+
+                    // create Base64 encodet string
                     String auth = ConnectorUtil.createAuthValue(username, password);
-                    Request request = chain.request().newBuilder().addHeader(Constants.HEADER_AUTHENTICATION, auth).build();
-                    return chain.proceed(request);
+                    request.addHeader(Constants.HEADER_AUTHENTICATION, auth);
                 }
             });
         }
-
-        // set endpoint url and use OkHTTP as HTTP client
-        Retrofit.Builder builder = new Retrofit.Builder()
-                .baseUrl(baseUrl)
-                .client(client);
-
         builder.setConverter(new OpenHabConverter());
         RestAdapter adapter = builder.build();
 
