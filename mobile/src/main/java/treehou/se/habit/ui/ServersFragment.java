@@ -4,7 +4,10 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -28,6 +31,7 @@ import treehou.se.habit.Constants;
 import treehou.se.habit.R;
 import treehou.se.habit.core.db.ServerDB;
 import treehou.se.habit.ui.settings.SetupServerFragment;
+import treehou.se.habit.util.MdnsServerList;
 
 public class ServersFragment extends Fragment {
 
@@ -37,6 +41,9 @@ public class ServersFragment extends Fragment {
     private ViewGroup container;
 
     private View viwEmpty;
+
+    private MdnsServerList mdnsServers;
+    private Handler mdnsHandler;
 
     public static ServersFragment newInstance() {
         ServersFragment fragment = new ServersFragment();
@@ -53,12 +60,15 @@ public class ServersFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        mdnsServers = new MdnsServerList(getContext());
         serversAdapter = new ServersAdapter(getActivity());
         serversAdapter.addAll(ServerDB.getServers());
         serversAdapter.setItemListener(new ServersAdapter.ItemListener() {
             @Override
             public void onItemClickListener(ServersAdapter.ServerHolder serverHolder) {
                 final ServerDB server = serversAdapter.getItem(serverHolder.getAdapterPosition());
+
+                server.save();
                 getActivity().getSupportFragmentManager().beginTransaction()
                         .replace(R.id.page_container, SetupServerFragment.newInstance(server))
                         .addToBackStack(null)
@@ -69,6 +79,10 @@ public class ServersFragment extends Fragment {
             public boolean onItemLongClickListener(final ServersAdapter.ServerHolder serverHolder) {
 
                 final ServerDB server = serversAdapter.getItem(serverHolder.getAdapterPosition());
+                // MDNS servers don't need the long click menu
+                if (server.isAutodiscovered())
+                    return false;
+
                 new AlertDialog.Builder(getActivity())
                         .setItems(R.array.server_manager, new DialogInterface.OnClickListener() {
                             @Override
@@ -131,11 +145,33 @@ public class ServersFragment extends Fragment {
     }
 
     @Override
+    public void onPause() {
+        super.onPause();
+        mdnsServers.stopDiscovery();
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
 
         serversAdapter.clear();
         serversAdapter.addAll(ServerDB.getServers());
+        serversAdapter.addAll(mdnsServers.getDiscoveredServers());
+
+        mdnsHandler = new Handler();
+        mdnsServers.startDiscovery(new MdnsServerList.MdnsServerListener() {
+            @Override
+            public void serverFound(final ServerDB serverDb) {
+                ServersFragment.this.mdnsHandler.post(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        serversAdapter.addItem(serverDb);
+                    }
+                });
+
+            }
+        });
 
         // Initialize demo server first time starting
         SharedPreferences preferences = getActivity().getSharedPreferences(Constants.PREFERENCE_SERVER, Context.MODE_PRIVATE);
@@ -207,10 +243,12 @@ public class ServersFragment extends Fragment {
 
         public class ServerHolder extends RecyclerView.ViewHolder {
             public final TextView lblName;
+            public final TextView serverNotes;
 
             public ServerHolder(View view) {
                 super(view);
                 lblName = (TextView) view.findViewById(R.id.lbl_server);
+                serverNotes = (TextView) view.findViewById(R.id.server_notes);
             }
         }
 
@@ -232,6 +270,9 @@ public class ServersFragment extends Fragment {
             ServerDB server = items.get(position);
 
             serverHolder.lblName.setText(server.getDisplayName(context));
+            if (server.isAutodiscovered()) {
+                serverHolder.serverNotes.setVisibility(View.VISIBLE);
+            }
             serverHolder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

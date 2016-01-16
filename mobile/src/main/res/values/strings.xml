@@ -97,4 +97,5 @@
     <string name="delete_cell">Delete cell?</string>
     <string name="name">Name</string>
     <string name="empty">Empty</string>
+    <string name="autodiscovered_server">Autodiscovered. Press here to add.</string>
 </resources>
