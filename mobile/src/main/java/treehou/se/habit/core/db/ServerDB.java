@@ -34,6 +34,8 @@ public class ServerDB extends Model {
     @Column(name = "majorVersion")
     private int majorVersion = 0;
 
+    private boolean autodiscovered = false;
+
     public ServerDB(){}
 
     public String getName() {
@@ -86,6 +88,14 @@ public class ServerDB extends Model {
 
     public boolean requiresAuth() {
         return !TextUtils.isEmpty(username) && !TextUtils.isEmpty(password);
+    }
+
+    public boolean isAutodiscovered() {
+        return autodiscovered;
+    }
+
+    public void setAutodiscovered(boolean autodiscovered) {
+        this.autodiscovered = autodiscovered;
     }
 
     /**
