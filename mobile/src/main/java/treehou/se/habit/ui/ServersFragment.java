@@ -158,6 +158,13 @@ public class ServersFragment extends Fragment {
         serversAdapter.addAll(ServerDB.getServers());
         serversAdapter.addAll(mdnsServers.getDiscoveredServers());
 
+        // Add demo server as an option
+        ServerDB demoServer = new ServerDB();
+        demoServer.setName("Public OpenHAB Demo");
+        demoServer.setRemoteUrl("http://demo.openhab.org:8080");
+        demoServer.setAutodiscovered(true);
+        serversAdapter.addItem(demoServer);
+
         mdnsHandler = new Handler();
         mdnsServers.startDiscovery(new MdnsServerList.MdnsServerListener() {
             @Override
@@ -172,21 +179,6 @@ public class ServersFragment extends Fragment {
 
             }
         });
-
-        // Initialize demo server first time starting
-        SharedPreferences preferences = getActivity().getSharedPreferences(Constants.PREFERENCE_SERVER, Context.MODE_PRIVATE);
-        if(preferences.getBoolean(Constants.PREF_INIT_SETUP, true)){
-            SharedPreferences.Editor edit = preferences.edit();
-            edit.putBoolean(Constants.PREF_INIT_SETUP,false);
-            if(serversAdapter.getItemCount() == 0){
-                ServerDB demoServer = new ServerDB();
-                demoServer.setName("Demo");
-                demoServer.setRemoteUrl("http://demo.openhab.org:8080");
-                demoServer.setAutodiscovered(true);
-                serversAdapter.addItem(demoServer);
-            }
-            edit.apply();
-        }
     }
 
     @Override
