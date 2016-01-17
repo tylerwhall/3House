@@ -182,7 +182,7 @@ public class ServersFragment extends Fragment {
                 ServerDB demoServer = new ServerDB();
                 demoServer.setName("Demo");
                 demoServer.setRemoteUrl("http://demo.openhab.org:8080");
-                demoServer.save();
+                demoServer.setAutodiscovered(true);
                 serversAdapter.addItem(demoServer);
             }
             edit.apply();
