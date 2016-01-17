@@ -287,15 +287,16 @@ public class ServersFragment extends Fragment {
         }
 
         public void addItem(ServerDB item) {
-            items.add(0, item);
-            notifyItemInserted(0);
+            items.add(item);
+            notifyItemInserted(items.size()-1);
             itemListener.itemCountUpdated(items.size());
         }
 
         public void addAll(List<ServerDB> items) {
+            int start = items.size();
             for(ServerDB item : items) {
-                this.items.add(0, item);
-                notifyItemRangeInserted(0, items.size());
+                this.items.add(item);
+                notifyItemRangeInserted(start, items.size()-start);
             }
             itemListener.itemCountUpdated(items.size());
         }
