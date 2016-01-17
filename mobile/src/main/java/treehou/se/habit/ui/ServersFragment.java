@@ -211,8 +211,8 @@ public class ServersFragment extends Fragment {
                 .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        serversAdapter.removeItem(serverHolder.getAdapterPosition());
                         server.delete();
+                        serversAdapter.removeItem(serverHolder.getAdapterPosition());
                     }
                 })
                 .setNegativeButton(R.string.cancel, null)
@@ -223,7 +223,7 @@ public class ServersFragment extends Fragment {
      * Show empty view if no controllers exist
      */
     private void updateEmptyView(int itemCount){
-        viwEmpty.setVisibility(itemCount <= 0 ? View.VISIBLE : View.GONE);
+        viwEmpty.setVisibility(ServerDB.numServers() <= 0 ? View.VISIBLE : View.GONE);
     }
 
     public static class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ServerHolder>{

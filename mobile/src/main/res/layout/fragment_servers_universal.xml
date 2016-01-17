@@ -17,6 +17,6 @@
         android:text="@string/empty_servers"
         android:padding="@dimen/full_page_empty_padding"
         android:visibility="gone"
-        android:gravity="center"
-        android:layout_gravity="center"/>
+        android:gravity="bottom"
+        android:layout_gravity="center_horizontal|bottom"/>
 </FrameLayout>

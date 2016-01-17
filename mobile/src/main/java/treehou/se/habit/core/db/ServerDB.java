@@ -116,6 +116,12 @@ public class ServerDB extends Model {
                 .execute();
     }
 
+    public static int numServers() {
+        return new Select()
+                .from(ServerDB.class)
+                .count();
+    }
+
     public boolean haveRemote(){
         return (getRemoteUrl()!=null && !getRemoteUrl().trim().equals(""));
     }

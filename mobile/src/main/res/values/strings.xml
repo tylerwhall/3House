@@ -91,7 +91,7 @@
     <string name="label">Label</string>
     <string name="arrows">Arrows</string>
     <string name="empty_controllers">No controller found. Press here to create your first controller.</string>
-    <string name="empty_servers">No servers found. Press here to add your first server.</string>
+    <string name="empty_servers">No servers configured. Press here to add your first server.</string>
     <string name="minus">-</string>
     <string name="plus">+</string>
     <string name="delete_cell">Delete cell?</string>
